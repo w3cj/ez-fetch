@@ -2,6 +2,7 @@
 
 A fetch wrapper to simplify network requests.
 
+* Includes `es6-promise`, `isomorphic-fetch` for use in older browsers and for use in a node.js environment
 * Inspects `content-type` header to parse response correctly
 * Throws an error (`catch`) if the response is not OK
 * Stringifies JSON and sets `content-type` header
