@@ -10,19 +10,27 @@ function makeRequest(method, url, body, options) {
 }
 
 function handleResponse(response) {
-  return response.clone().json().then(data => {
+  const handleBody = data => {
     return {
       response,
       data
     };
-  }).catch(() => {
-    return response.text().then(data => {
-      return {
-        response,
-        data
-      };
+  };
+
+  let promise = null;
+
+  const contentType = response.headers.get('content-type');
+  if (contentType.startsWith('application/json')) {
+    promise = response.json().then(handleBody);
+  } else if (contentType.startsWith('text')) {
+    promise = response.text().then(handleBody);
+  } else {
+    promise = response.clone().json().then(handleBody).catch(() => {
+      return response.text().then(handleBody);
     });
-  }).then(({response, data}) => {
+  }
+
+  return promise.then(({response, data}) => {
     if(response.ok) {
       return data;
     } else {
@@ -32,7 +40,7 @@ function handleResponse(response) {
 }
 
 function updateOptions(options) {
-  if (typeof options.body == 'object') {
+  if (options.body != null && typeof options.body == 'object') {
     options.body = JSON.stringify(options.body);
     options.headers = options.headers || {};
     options.headers['content-type'] = 'application/json';
